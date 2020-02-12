@@ -47,9 +47,6 @@ app.get('/resize/:width/:height/:filename*', (request, response) => {
     });
   }
 
-  const iPos = filename.lastIndexOf('.');
-  const fileType = iPos==-1 ? "png" : filename.substring(iPos+1).toLowerCase();
-
   const imgFilePath = path.join(imagesDirIn, filename);
 
   if (!fs.existsSync(imgFilePath)) {
@@ -58,12 +55,13 @@ app.get('/resize/:width/:height/:filename*', (request, response) => {
     });
   }
 
+  let fileType = request.query.targetformat;
+  if (!fileType) {
+    const iPos = filename.lastIndexOf('.');
+    fileType = iPos==-1 ? "png" : filename.substring(iPos+1).toLowerCase();
+  }
+  
   const tmpFilePath = createTmpFile(fileType);
-
-  // Simple checks to see if the value was passed in the url
-  // If it wasn't, the value is changed from undefined to null
-  //  width = width || null;
-  //  height = height || null;
 
   sharp(imgFilePath)
     .resize(iWidth, iHeight, { fit: 'inside' })
@@ -100,8 +98,11 @@ app.get('/crop/:width/:height/:filename*', (request, response) => {
     });
   }
 
-  const iPos = filename.lastIndexOf('.');
-  const fileType = iPos==-1 ? "png" : filename.substring(iPos+1).toLowerCase();
+  let fileType = request.query.targetformat;
+  if (!fileType) {
+    const iPos = filename.lastIndexOf('.');
+    fileType = iPos==-1 ? "png" : filename.substring(iPos+1).toLowerCase();
+  }
 
   const imgFilePath = path.join(imagesDirIn, filename);
 
