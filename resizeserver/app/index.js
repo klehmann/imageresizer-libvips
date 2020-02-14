@@ -16,6 +16,14 @@ const createTmpFile = (fileType) => {
   return tmpFilePath;
 }
 
+const decodeURLParts = (pathStr) => {
+  const arrParts = pathStr.split("/");
+  for (let i=0; i<arrParts.length; i++) {
+    arrParts[i] = decodeURIComponent(arrParts[i]);
+  }
+  return arrParts.join('/');
+}
+
 if (!fs.existsSync(tmpImagesDirPathOut)) {
   fs.mkdirSync(tmpImagesDirPathOut);
 }
@@ -41,8 +49,10 @@ app.get('/resize/:width/:height/:filename*', (request, response) => {
     filename = filename + request.params['0'];
   }
 
+  filename = decodeURLParts(filename);
+
   if (filename.indexOf("..") !== -1 || filename.indexOf(":") !== -1) {
-    return response.status(403).send({
+    return response.status(400).send({
       message: 'Invalid filename: ' + filename
     });
   }
@@ -50,7 +60,7 @@ app.get('/resize/:width/:height/:filename*', (request, response) => {
   const imgFilePath = path.join(imagesDirIn, filename);
 
   if (!fs.existsSync(imgFilePath)) {
-    return response.status(400).send({
+    return response.status(404).send({
       message: 'Image file not found: ' + filename
     });
   }
@@ -91,6 +101,8 @@ app.get('/crop/:width/:height/:filename*', (request, response) => {
   if (request.params.hasOwnProperty('0')) {
     filename = filename + request.params['0'];
   }
+
+  filename = decodeURLParts(filename);
 
   if (filename.indexOf("..") !== -1 || filename.indexOf(":") !== -1) {
     return response.status(403).send({
